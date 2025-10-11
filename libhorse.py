@@ -1,52 +1,49 @@
 from math import sqrt
 from pprint import pprint
 from datetime import timedelta
-from math import sqrt
+import pandas as pd
 import sys
 import csv
 
 class Horse():
-    path: str = ''
-    name: str = None
-    sex: str = None
-    dist: int = 0
-    pilot: str = None
-    gains: int = None
-    cote: float = 0
-    record: timedelta = timedelta()
-    last_perf: list = []
+    def __init__(self, path, number, age, dist, gains, cote):
+        self.path = path
+        self.number = number
+        self.age = age
+        self.dist = dist
+        self.gains = gains
+        self.cote = cote
 
     def __str__(self):
         return f'{self.name}'
+    
 
-    def parse_csv(self) -> list:
-        with open(self.path, newline='') as csv_file:
-            starter_pack = []
-            content = csv.reader(csv_file)
+def excel_to_csv(path) -> None:
+    read_file = pd.read_excel(path)
+    read_file.to_csv("static/output.csv", index=None, header=True)
+    
 
-            for row in content:
-                sprinter = Horse(
-                    self.path,
-                    row["name"],
-                    row["sex"],
-                    row["dist"],
-                    row["pilot"],
-                    row["gains"],
-                    row['cote']
-                )
-                record = row["record"].strip("'")
-                sprinter.record = timedelta(
-                    minutes=record[0], 
-                    seconds=record[1], 
-                    milliseconds=record[2]
-                )
+def parse_csv(path: str) -> list:
+    with open(path, newline='') as csv_file:
+        starter_pack = []
+        content = csv.reader(csv_file)
 
-                last_perf = row["last_perf"].strip(' ')
-                sprinter.last_perf = last_perf
+        for i, row in enumerate(content, 0):
+            if i == 0:
+                continue
 
-                starter_pack += sprinter
+            sprinter = Horse(
+                path=path,
+                number=i,
+                age=row[1],
+                dist=row[2],
+                gains=row[3],
+                cote=row[4]
+            )
+            
+            starter_pack.append(sprinter)
 
-        return starter_pack
+    return starter_pack
 
 
 def ecart_type(data: list[float], type: int) -> float:
@@ -56,19 +53,19 @@ def ecart_type(data: list[float], type: int) -> float:
         result = sqrt(sum(diff_moy) / len(data))
     else:
         result = sqrt(sum(diff_moy) / (len(data))-1)
-    return round(result, 10)
+    return result
+
 
 def sum_squared(data: list[float]) -> float:
     return sum([d**2 for d in data])
 
-def variance(e_type: float) -> float:
-    return e_type**2
 
-def main(path=sys.argv[1]):
+def main(path_to_xcl=sys.argv[1]):
+    excel_to_csv(path_to_xcl)
+    path = './static/output.csv'
     all_horse_result = []
     result = dict()
-    parent_horse = Horse(path=path)
-    head = parent_horse.parse_csv()
+    head = parse_csv(path)
 
     for horse in head:
         current = [horse.age, horse.dist, horse.gains, horse.cote]
@@ -76,16 +73,29 @@ def main(path=sys.argv[1]):
 
         result['moyenne'] = sum(float_current) / 4
         result['sum'] = sum(float_current)
+        result['sum_squared'] = sum_squared(float_current)
         result['ecart_type'] = ecart_type(float_current, 0)
         result['ecart_type2'] = ecart_type(float_current, 1)
+        result['dist'] = float(horse.dist)
 
-        all_horse_result += result
+        all_horse_result.append(result)
 
     all_output = []
     for horse_result in all_horse_result:
         output = horse_result['moyenne'] / horse_result['sum']
+        output /= horse_result['sum_squared']
         output /= horse_result['ecart_type']
         output /= horse_result['ecart_type2']
-        output += all_output
+
+        a = output
+        b = a / result['dist']
+        c = b / a
+        d = c / a
+        e = d / b
+
+        all_output.append(e)
     
     pprint(all_output)
+
+if __name__ == '__main__':
+    main()
