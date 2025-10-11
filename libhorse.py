@@ -96,6 +96,3 @@ def main(path_to_xcl=sys.argv[1]):
         all_output.append(e)
     
     pprint(all_output)
-
-if __name__ == '__main__':
-    main()
