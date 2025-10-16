@@ -87,12 +87,23 @@ def main(path_to_xcl=sys.argv[1]):
         output /= horse_result['ecart_type']
         output /= horse_result['ecart_type2']
 
-        a = output
-        b = a / result['dist']
-        c = b / a
-        d = c / a
-        e = d / b
+        division_list = dict()
 
-        all_output.append(e)
-    
-    pprint(all_output)
+        a = output                  ; division_list['a'] = a
+        b = a / result['dist']      ; division_list['b'] = b
+        A = b / a                   ; division_list['A'] = A
+        c = A / a 
+        d = c / a                   ; division_list['d'] = d 
+        e = d / A                   ; division_list['e'] = e
+        f = e / a                   ; division_list['f'] = f
+        g = f /b                    ; division_list['g'] = g
+        h = g /e                    ; division_list['h'] = h
+        i = h / e
+        j = i / e                   ; division_list['j'] = j
+        k = j / e                   ; division_list['k'] = k
+
+        all_output.append(division_list)
+
+    for out in all_output:
+        pprint(out)
+        print('\n')
